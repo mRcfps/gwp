@@ -29,11 +29,34 @@ type Comment struct {
 
 func main() {
 	post := Post{
-		ID: 1,
+		ID:      1,
 		Content: "Hello World!",
 		Author: Author{
-			ID: 2,
-			Name: "mRcfps"
-		}
+			ID:   2,
+			Name: "mRcfps",
+		},
+		Comments: []Comment{
+			Comment{
+				ID:      3,
+				Content: "Have a great day!",
+				Author:  "Adam",
+			},
+			Comment{
+				ID:      4,
+				Content: "How are you today?",
+				Author:  "Betty",
+			},
+		},
+	}
+
+	output, err := json.MarshalIndent(&post, "", "  ")
+	if err != nil {
+		fmt.Println("Error marshalling to JSON:", err)
+		return
+	}
+	err = ioutil.WriteFile("post.json", output, 0644)
+	if err != nil {
+		fmt.Println("Error writing JSON to file:", err)
+		return
 	}
 }
