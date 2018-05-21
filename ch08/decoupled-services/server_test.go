@@ -4,29 +4,15 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
-	"os"
 	"strings"
 	"testing"
 )
 
-var (
-	mux    *http.ServeMux
-	writer *httptest.ResponseRecorder
-)
+func TestGetPost(t *testing.T) {
+	mux := http.NewServeMux()
+	mux.HandleFunc("/post/", handleRequest(&FakePost{}))
 
-func TestMain(m *testing.M) {
-	setUp()
-	code := m.Run()
-	os.Exit(code)
-}
-
-func setUp() {
-	mux = http.NewServeMux()
-	mux.HandleFunc("/post/", handleRequest)
-	writer = httptest.NewRecorder()
-}
-
-func TestHandleGet(t *testing.T) {
+	writer := httptest.NewRecorder()
 	request, _ := http.NewRequest("GET", "/post/1", nil)
 	mux.ServeHTTP(writer, request)
 
@@ -36,16 +22,25 @@ func TestHandleGet(t *testing.T) {
 	var post Post
 	json.Unmarshal(writer.Body.Bytes(), &post)
 	if post.ID != 1 {
-		t.Error("Cannot retrieve JSON post")
+		t.Errorf("Cannot retrieve JSON post")
 	}
 }
 
-func TestHandlePut(t *testing.T) {
+func TestPutPost(t *testing.T) {
+	mux := http.NewServeMux()
+	post := &FakePost{}
+	mux.HandleFunc("/post/", handleRequest(post))
+
+	writer := httptest.NewRecorder()
 	json := strings.NewReader(`{"content":"Updated post","author":"mRcfps"}`)
 	request, _ := http.NewRequest("PUT", "/post/1", json)
 	mux.ServeHTTP(writer, request)
 
 	if writer.Code != 200 {
 		t.Errorf("Response code is %v", writer.Code)
+	}
+
+	if post.Content != "Updated post" {
+		t.Error("Content is not updated", post.Content)
 	}
 }
